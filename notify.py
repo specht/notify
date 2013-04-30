@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from subprocess import Popen, PIPE, STDOUT
@@ -14,16 +14,23 @@ class HttpHandler(BaseHTTPRequestHandler):
             contentLength = int(self.headers['Content-Length'])
             if contentLength < 1:
                 raise Exception()
-            if contentLength > 1024:
+            if contentLength > 1024 * 64:
                 raise Exception("Content too long.")
             content = self.rfile.read(contentLength)
+            print(content)
             data = json.loads(content)
+            print(data)
             
             token = data['token']
             if len(token) != 16:
                 raise Exception("Invalid token.")
             title = 'Notification from nhcham.org'
             message = data['message']
+            title = message
+            if "\n" in title:
+                title = title[:title.index("\n")]
+            if len(title) > 256:
+                title = title[:256]
             
             if token in tokens:
                 command = []
